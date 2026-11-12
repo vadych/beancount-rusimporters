@@ -1,0 +1,63 @@
+# Пример конфигурации beancount-rusimporters.
+# Скопируйте в приватный rusimporters.toml рядом с import.py.
+# Счета и шаблоны ниже условные: замените их на свои.
+#
+# Приоритет: bank.rules -> bank.mappings -> common.rules -> common.mappings.
+# Первое совпадение побеждает.
+# mappings: подстрока без учёта регистра, длинные шаблоны первыми.
+# rules: regex без учёта регистра.
+
+[defaults]
+# При использовании smart_importer.PredictPostings удалите строку
+# unknown_expense ниже: проводка на Expenses:Unknown мешает
+# автоматическому предсказанию категории расхода.
+unknown_expense = "Expenses:Unknown"
+
+# Влияние доходного fallback на предсказание отдельно не проверялось.
+unknown_income = "Income:Unknown"
+
+[common.mappings]
+"EXAMPLE SUPERMARKET" = "Expenses:Еда:Продукты"
+"EXAMPLE CAFE" = "Expenses:Еда:Рестораны"
+
+[[common.rules]]
+pattern = '\bEXAMPLE TAXI\b'
+account = "Expenses:Транспорт"
+direction = "expense"
+
+# Пример правила с ограничением суммы и тегом.
+[[common.rules]]
+pattern = '^EXAMPLE SERVICE$'
+account = "Expenses:Подписки"
+min_amount = 100
+max_amount = 1000
+direction = "expense"
+tags = ["Example"]
+
+[sber]
+unknown_account = "Assets:Bank:Sber:Unknown"
+
+[sber.mappings]
+"EXAMPLE SBER SHOP" = "Expenses:Еда:Продукты"
+
+[[sber.rules]]
+pattern = '\bКапитализация\b'
+account = "Income:ПроцентыПоВкладам"
+direction = "income"
+
+[tks]
+unknown_account = "Assets:Bank:Tks:Unknown"
+
+[tks.mappings]
+"Проценты на остаток" = "Income:ПроцентыПоВкладам"
+
+[[tks.rules]]
+pattern = 'За участие в акции|Зачисление кэшбэка'
+account = "Income:Кэшбек"
+direction = "income"
+
+[vtb]
+unknown_account = "Assets:Bank:Vtb:Unknown"
+
+[vtb.mappings]
+"Начисление процентов" = "Income:ПроцентыПоВкладам"
